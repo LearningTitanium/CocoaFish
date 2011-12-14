@@ -59,7 +59,7 @@ Client.prototype.login = function(args, callback) {
 /*
  PLACE FUNCTION
 */
-Client.prototype.place = function(callback) {
+Client.prototype.searchPlaces = function(callback) {
 	var that = this;
 	var xhr = Ti.Network.createHTTPClient();
 	
@@ -102,4 +102,60 @@ Client.prototype.place = function(callback) {
 };
 
 
+/*
+ CREATE A PLACE FUNCTION
+ */
+Client.prototype.createPlace = function(args, callback) {
+	var that = this;
+	var xhr = Ti.Network.createHTTPClient();
+	var params = {
+		"name" : args.name,
+		"address": args.address,
+		"city" : args.city,
+		"state" : args.state,
+		"postal_code" : args.postal_code,
+		"country" :args.country,
+		"twitter" :args.twitter,
+		"website" : args.website,
+		"latitude" : args.latitude,
+		"longitude" : args.longitude
+	};
+	
+	xhr.onerror = function(r) {
+		var alertDialog = Titanium.UI.createAlertDialog({
+			title : '',
+			message : 'Unable to connect server. Please check network connection',
+			buttonNames : ['OK']
+		});
+		alertDialog.show();
+		Titanium.API.error("login " + JSON.stringify(r));
+		Titanium.API.error(xhr.responseText);
+
+		callback({
+			"success" : false,
+			"response" : xhr.responseText,
+			"error" : r
+		});
+	};
+	xhr.onload = function() {
+		var respObj = JSON.parse(xhr.responseText);
+		if(respObj.meta.status === 'ok' && respObj.meta.code === 200 && respObj.meta.method_name === 'createPlace') {
+			callback({
+				"success" : true,
+				"response" : respObj
+			});
+		} else {
+			callback({
+				"success" : false,
+				"response" : respObj,
+				"error" : respObj.meta.message
+			});
+		}
+	};
+
+	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+	xhr.open('POST', that.ENDPOINT+"places/create.json.json?key=" + that.COCOAFISH_APPLICATION_KEY);
+	xhr.send(params);
+};
 exports.Client = Client;
