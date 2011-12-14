@@ -1,12 +1,14 @@
-//include Cocoafish & credentials module
+// Based on the initial work done by Arron Saunders
+//http://blog.clearlyinnovative.com/post/14175298162/titanium-appcelerator-quickie-cocoafish-api-module
+
+
 var credentials = require('credentials').C;
 var cocoafish = require('cocoafish_module');
 
 //create Cocoafish Client
 var client = new cocoafish.Client(credentials.COCOAFISH_APP_NAME, credentials.COCOAFISH_API_KEY);
 
-// login to the app
-/*
+// LOGIN INTO THE APP
 client.login({
 	'login' : "sharry@molinto.com",
 	'password' : "password"
@@ -18,8 +20,8 @@ client.login({
 		Ti.API.error(e.error);
 	}
 });
-*/
 
+// SEARCH FOR A PLACE
 client.place(function(e) {
 	if(e.success === true) {
 		//Ti.API.info("place " + JSON.stringify(e));
