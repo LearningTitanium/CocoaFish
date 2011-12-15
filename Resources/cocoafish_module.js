@@ -1,18 +1,12 @@
 function Client(applicationName, applicationkey) {
 	this.COCOAFISH_APP_NAME = applicationName;
 	this.COCOAFISH_APPLICATION_KEY = applicationkey;
-	
 	this.ENDPOINT = 'https://api.cocoafish.com/v1/';
-	
 	this.CURRENT_USER = {};
-	this.CURRENT_PLACE = {};
-
 	//Ti.API.debug(JSON.stringify(this));
 }
 
-/*
- LOGIN FUNCTION
- */
+/*  LOGIN FUNCTION  */
 Client.prototype.login = function(args, callback) {
 	var that = this;
 	var xhr = Ti.Network.createHTTPClient();
@@ -44,20 +38,19 @@ Client.prototype.login = function(args, callback) {
 			"response" : xhr.responseText
 		});
 		
-		// SAVE THE CURRENT USER FOR LATER
-		var respObject = JSON.parse(xhr.responseText);
-		that.CURRENT_USER = respObject.response.users[0];
-		Ti.API.info("Saved current user " + that.CURRENT_USER);
+		var respObject= JSON.parse(xhr.responseText);
+		Ti.App.Properties.setString('session_id', respObject.meta.session_id);
+		//that.CURRENT_USER = respObject.response.users[0];
+		//Ti.API.info("Saved current user " + that.CURRENT_USER);
 	};
 
-	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
 	xhr.open('POST', that.ENDPOINT+"users/login.json?key=" + that.COCOAFISH_APPLICATION_KEY);
+	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	xhr.send(params);
 };
 
 /*
- PLACE FUNCTION
+ SEARCH PLACE FUNCTION
 */
 Client.prototype.searchPlaces = function(callback) {
 	var that = this;
@@ -95,9 +88,8 @@ Client.prototype.searchPlaces = function(callback) {
 		}
 	};
 
-	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
 	xhr.open('GET', that.ENDPOINT+"places/search.json?key=" + that.COCOAFISH_APPLICATION_KEY);
+	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	xhr.send();
 };
 
@@ -124,7 +116,7 @@ Client.prototype.createPlace = function(args, callback) {
 	xhr.onerror = function(r) {
 		var alertDialog = Titanium.UI.createAlertDialog({
 			title : '',
-			message : 'Unable to connect server. Please check network connection',
+			message : 'Please check network connection (are you logged in?)',
 			buttonNames : ['OK']
 		});
 		alertDialog.show();
@@ -153,9 +145,9 @@ Client.prototype.createPlace = function(args, callback) {
 		}
 	};
 
+	xhr.open('POST', that.ENDPOINT+"places/create.json?key=" + that.COCOAFISH_APPLICATION_KEY);
 	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-	xhr.open('POST', that.ENDPOINT+"places/create.json.json?key=" + that.COCOAFISH_APPLICATION_KEY);
+    xhr.setRequestHeader("Cookie", "_session_id="+Ti.App.Properties.getString('session_id'));
 	xhr.send(params);
 };
 exports.Client = Client;
